@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>여자아이돌 이상형 월드컵</title>
+    <style>
+        :root {
+            --card-hover-bright: rgba(255, 255, 255, 0.25);
+            --gold-glow: 0 0 30px rgba(255, 215, 0, 0.8), 0 0 60px rgba(255, 215, 0, 0.4);
+        }
+
+        body {
+            margin: 0; padding: 0; width: 100vw; height: 100vh;
+            background: #020406; overflow: hidden;
+            display: flex; justify-content: center; align-items: center;
+            font-family: 'Pretendard', sans-serif; color: white;
+        }
+
+        /* --- 배경 요소 --- */
+        .milky-way-bg { position: absolute; top: 50%; left: 50%; width: 200vmax; height: 200vmax; transform: translate(-50%, -50%) rotate(-35deg); background: radial-gradient(ellipse at center, rgba(255, 245, 230, 0.15) 0%, transparent 50%), linear-gradient(to right, transparent 40%, rgba(100, 70, 255, 0.1) 48%, rgba(255, 255, 255, 0.15) 50%, rgba(100, 70, 255, 0.1) 52%, transparent 60%); filter: blur(80px); z-index: -3; }
+        .milky-way-spread { position: absolute; top: 50%; left: 50%; width: 100vw; height: 100vh; transform: translate(-50%, -50%) rotate(-35deg); z-index: -2; background: linear-gradient(to right, transparent 0%, rgba(200, 150, 255, 0.08) 35%, rgba(255, 255, 255, 0.18) 50%, rgba(200, 150, 255, 0.08) 65%, transparent 100% ); background-size: 200% 100%; filter: blur(50px); animation: spreadSide 18s ease-in-out infinite; }
+        @keyframes spreadSide { 0%, 100% { transform: translate(-50%, -50%) rotate(-35deg) scaleX(0.8); background-position: 100% 0%; opacity: 0.2; } 50% { transform: translate(-50%, -50%) rotate(-35deg) scaleX(1.4); background-position: 0% 0%; opacity: 0.5; } }
+        .star { position: absolute; background: white; border-radius: 50%; opacity: 0.5; animation: twinkle var(--duration) infinite ease-in-out; z-index: 0; }
+        @keyframes twinkle { 0%, 100% { opacity: 0.2; transform: scale(1); } 50% { opacity: 0.7; transform: scale(1.2); } }
+
+        /* --- 별자리 레이어 --- */
+        .constellation { position: absolute; z-index: 1; pointer-events: none; }
+        .const-star { position: absolute; width: 4px; height: 4px; background: #fff; border-radius: 50%; box-shadow: 0 0 12px white; }
+        .const-line { position: absolute; background: rgba(255, 255, 255, 0.2); height: 1px; transform-origin: left center; }
+        .const-silhouette { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 120%; height: 120%; filter: blur(30px); opacity: 0.12; z-index: -1; }
+       
+        /* --- 별똥별 애니메이션 추가 --- */
+        .shooting-star {
+            position: absolute;
+            top: -10px;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 0 10px 2px white;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0;
+        }
+
+        @keyframes shoot {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(calc(100vw * 0.3), 100vh) scale(0.5);
+                opacity: 0;
+            }
+        }
+
+        /* --- 메인 메뉴 --- */
+        #main-menu { text-align: center; z-index: 10; transition: opacity 0.8s; }
+        h1 { font-size: 4rem; font-weight: 800; margin-bottom: 3.5rem; letter-spacing: -2px; background: linear-gradient(to bottom, #ffffff, #c0c0c0); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .button-group { display: flex; gap: 20px; justify-content: center; }
+        .round-button { padding: 20px 50px; font-size: 1.3rem; font-weight: 900; color: white; background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 100px; cursor: pointer; transition: all 0.4s ease; }
+        .round-button:hover { background: rgba(255, 255, 255, 0.2); transform: translateY(-5px); border-color: white; }
+
+        /* --- 시작 문구 --- */
+        #intro-text {
+            position: absolute; font-size: 5rem; font-weight: 900; 
+            opacity: 0; transform: scale(0.8); z-index: 20;
+            text-shadow: 0 0 40px rgba(255,255,255,0.4);
+            transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+        }
+        #intro-text.show { opacity: 1; transform: scale(1); }
+
+        /* --- 게임 화면 --- */
+        #game-container {
+            
+            display: none; width: 100%; height: 100%;
+            flex-direction: column; justify-content: center; align-items: center;
+            z-index: 10; opacity: 0; transition: opacity 0.4s;
+        }
+
+        .match-box {
+            display: flex; justify-content: center; align-items: center;
+            width: 100%; max-width: 1200px;
+        }
+
+        .card {
+            width: 400px; height: 560px;
+            background: rgba(255, 255, 255, 0.07);
+            border-radius: 30px; overflow: hidden; cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+            position: relative;
+            margin: 0 20px;
+        }
+
+        .card:hover {
+            transform: scale(1.08);
+            background: var(--card-hover-bright);
+            /* 금색 테두리와 광채 효과 추가 */
+            box-shadow: 0 0 0 3px gold, var(--gold-glow) !important;
+    
+            border-color: transparent !important;
+
+            z-index: 10; 
+            transition: all 0.3s ease;
+        }
+
+        /* 최종 우승자 효과 */
+        .winner-card {
+            transform: scale(1.1) translateY(65px) !important;
+            border: 3px solid gold !important;
+            box-shadow: var(--gold-glow) !important;
+            cursor: default !important;
+            margin: 0 !important;
+        }
+
+        .card img {
+            width: 100%; height: 80%; object-fit: cover;
+            display: block; background: #111;
+        }
+
+        .card-name {
+            height: 20%; display: flex; justify-content: center; align-items: center;
+            font-size: 1.8rem; font-weight: 800; background: rgba(0,0,0,0.2);
+        }
+
+        .vs-text { font-size: 4rem; 
+                   font-weight: 900; 
+                   font-style: italic; 
+                   opacity: 0.6; 
+                   transition: opacity 0.3s; 
+                   margin: 0 30px; 
+                   display: inline-block; /* 위치 이동이 적용되도록 설정 */
+                   transform: translate(-5px, -20px); 
+                   /* 앞의 0px를 수정하면 좌우로, 뒤의 -20px를 수정하면 위아래로 움직입니다. */
+                   
+        }
+        
+        .round-info {
+            position: fixed; 
+            top: 70px; 
+            font-size: 1.5rem;
+            font-weight: 800;
+            padding: 8px 30px; 
+            border-radius: 50px;
+            background: rgba(255, 255, 255, 0.1); 
+            backdrop-filter: blur(5px);
+            left: 50%; transform: translateX(-50%);
+            z-index: 100;
+        }
+
+        .game-main-title {
+            position: absolute; top: 25px;
+            font-size: 1.1rem; font-weight: 300; letter-spacing: 0.5rem;
+            color: rgba(255, 255, 255, 0.6);
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+            left: 50%; transform: translateX(-50%);
+        }
+
+        #reset-btn-container {
+            display: none; width: 100%; justify-content: center;
+            opacity: 0; transition: opacity 1s;
+            margin-top: 20px;
+        }
+
+        .reset-button {
+            position: fixed; 
+            bottom: 30px; 
+            left: 30px;
+            padding: 15px 30px; 
+            font-size: 1rem; 
+            font-weight: 600;
+            color: #fff; 
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50px; cursor: pointer;
+            backdrop-filter: blur(5px); transition: all 0.3s; z-index: 100;
+        }
+        .reset-button:hover { background: #fff; color: #000; }
+
+        #share-container {
+            display: none; 
+            justify-content: center; 
+            gap: 25px;
+            width: 100%; 
+            opacity: 0; 
+            transition: opacity 0.8s;
+            margin-top: 60px; /* 카드 아래로 충분히 간격 조절 */
+            position: relative;     /* 위치 이동을 위해 추가 */
+            left: 0px;              /* 2. 좌우 이동: 양수는 오른쪽, 음수는 왼쪽 */
+            top: 45px;               /* 3. 상하 미세 이동: 양수는 아래, 음수는 위 */
+        }
+
+        .share-link {
+            width: 60px; height: 60px; border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1); cursor: pointer;
+            display: flex; justify-content: center; align-items: center;
+            transition: all 0.3s; overflow: hidden; text-decoration: none;
+        }
+
+        .share-link:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1); border-color: white;
+        }
+
+        .share-link img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* --- 애니메이션 --- */
+        .card-selected { z-index: 100; pointer-events: none; }
+        .select-left-anim #card-left { transform: translateX(255px) scale(1.1); }
+        .select-left-anim #card-right { transform: translateX(300px); opacity: 0; }
+        .select-right-anim #card-right { transform: translateX(-255px) scale(1.1); }
+        .select-right-anim #card-left { transform: translateX(-300px); opacity: 0; }
+        .select-anim-active .vs-text { opacity: 0; }
+
+        /* 마우스 별 가루 스타일 */
+        .cursor-particle {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 4px;
+            background: white;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999; /* 모든 요소보다 위에 표시 */
+            box-shadow: 0 0 10px white, 0 0 20px rgba(255, 255, 255, 0.5);
+            animation: fadeParticle 1s ease-out forwards;
+        }
+
+        @keyframes fadeParticle {
+            0% {
+                transform: scale(1) translateY(0);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(0) translateY(20px); /* 아래로 살짝 떨어지며 소멸 */
+                opacity: 0;
+            }
+        }
+        /* 명예의 전당 모달 스타일 */
+        #hall-of-fame-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 75vw; /* 1920의 75% 수준 대응 */
+            height: 75vh;
+            background: rgba(10, 12, 15, 0.95);
+            backdrop-filter: blur(20px);
+            border: 2px solid gold;
+            border-radius: 30px;
+            z-index: 2000;
+            padding: 40px;
+            box-sizing: border-box;
+            overflow-y: auto; /* 마우스 휠로 내릴 수 있도록 설정 */
+
+            
+        }
+
+        /* 커스텀 스크롤바 */
+        #hall-of-fame-modal::-webkit-scrollbar {
+            width: 8px;
+        }
+        #hall-of-fame-modal::-webkit-scrollbar-thumb {
+            background: gold;
+            border-radius: 10px;
+        }
+
+        #hall-of-fame-modal h2 {
+            font-family: 'Pretendard', sans-serif;
+            color: gold;
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 40px;
+            letter-spacing: 2px;
+        }
+
+        .hall-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 30px;
+        }
+
+        /* 명예의 전당 아이돌 카드 */
+        .hall-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            transition: transform 0.3s;
+        }
+
+        .hall-card:hover {
+            transform: translateY(-10px);
+            border-color: gold;
+        }
+
+        .hall-card img {
+            width: 100%;
+            height: 280px;
+            object-fit: cover;
+        }
+
+        .hall-info {
+            padding: 15px;
+            text-align: center;
+        }
+
+        .hall-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 8px;
+        }
+
+        .hall-count {
+            font-size: 1rem;
+            color: gold;
+            font-weight: 800;
+        }
+
+        /* 모달 닫기 버튼 */
+        .close-hall {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            font-size: 2.5rem;
+            color: white;
+            cursor: pointer;
+        }
+        .hall-btn {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #000;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: linear-gradient(45deg, #ffd700, #ffae00);
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+            font-family: 'Pretendard', sans-serif;
+        }
+
+        .hall-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(255, 215, 0, 0.5);
+            background: linear-gradient(45deg, #ffae00, #ffd700);
+        }
+
+        /* 진행 상태바 스타일 */
+        #progress-container {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            z-index: 1000;
+        }
+
+        #progress-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #FFD700, #FFF5E6);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.7);
+            transition: width 0.5s ease-out;
+        }
+        #stopwatch-container {
+            position: fixed;    /* 화면 좌측 상단 고정 */
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            background-color: rgba(255, 255, 255, 0.2); /* 반투명 배경 */
+            backdrop-filter: blur(5px);                 /* 배경 흐림 효과 (선택 사항) */
+            border-radius: 15px;                         /* 둥근 모서리 */
+            z-index: 1000;                               /* 다른 요소보다 위에 표시 */
+            border: 1px solid rgba(255, 255, 255, 0.3); /* 살짝 보이는 테두리 */
+        }
+
+        #stopwatch-display {
+            font-family: 'Courier New', Courier, monospace; /* 숫자 간격 고정 */
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: white; /* 글자색은 가독성을 위해 흰색 (배경에 따라 조절) */
+        }
+
+        #undo-btn {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+
+            padding: 12px 25px;
+            font-size: 1rem;
+            font-weight: 700;
+            color: white;
+
+            background: rgba(255,255,255,0.1);
+            border: 1px solid transparent; /* 테두리 투명 */
+            border-radius: 50px; /* 둥근 직사각형 */
+
+            backdrop-filter: blur(5px);
+            cursor: pointer;
+            z-index: 100;
+        }
+
+        #undo-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        #reset-btn {
+        position: fixed;
+        bottom: 30px;
+        right: 30px; /* 👉 우측 끝 */
+
+        padding: 12px 25px;
+        font-size: 1rem;
+        font-weight: 700;
+        color: white;
+
+        background: rgba(255,255,255,0.1);
+        border: 1px solid transparent; /* 투명 테두리 */
+        border-radius: 50px; /* 둥근 직사각형 */
+
+        backdrop-filter: blur(5px);
+        cursor: pointer;
+        z-index: 100;
+    }
+
+    #reset-btn:hover {
+        background: rgba(255,255,255,0.3);
+    }
+    .fade-out {
+        opacity: 0;
+        transition: opacity 0.5s ease;
+    }
+    /* 처음에는 두 버튼 모두 숨깁니다 */
+    #undo-btn, #reset-btn {
+        display: none;
+    }
+
+
+    /* 시작 화면에서 보이지 않아야 할 요소들 */
+    #progress-container, 
+    #stopwatch-container, 
+    .game-main-title, 
+    #round-title, 
+    #undo-btn, 
+    #reset-btn {
+        display: none;
+    }    
+
+
+        
+
+    </style>
+</head>
+<body>
+
+    <div class="milky-way-bg"></div>
+    <div class="milky-way-spread"></div>
+
+    <div id="const-aquarius" class="constellation" style="top: 10%; left: 8vw; width: 320px; height: 250px;">
+        <svg class="const-silhouette" viewBox="0 0 200 200" fill="none"><path d="M100 20C80 20 60 40 60 70C60 90 80 110 50 140C30 160 30 180 100 180C170 180 170 160 150 140C120 110 140 90 140 70C140 40 120 20 100 20Z" fill="skyblue"/></svg>
+    </div>
+    <div id="const-sagittarius" class="constellation" style="top: 12%; right: 10vw; width: 300px; height: 300px;">
+        <svg class="const-silhouette" viewBox="0 0 200 200" fill="none"><circle cx="100" cy="40" r="15" fill="#FF69B4"/><path d="M100 55 L100 120 L60 160 M100 120 L140 160" stroke="#FF69B4" stroke-width="10"/><path d="M100 80 L180 80 M180 40 L180 120" stroke="white" stroke-width="4"/></svg>
+    </div>
+
+    <div id="main-menu">
+        <h1>여자아이돌 이상형 월드컵</h1>
+        <div class="button-group">
+            <button class="round-button" onclick="startWorldCup(32)">32 ROUNDS</button>
+            <button class="round-button" onclick="startWorldCup(64)">64 ROUNDS</button>
+            <button class="round-button" onclick="startWorldCup(128)">128 ROUNDS</button>
+        </div>
+    </div>
+    <!-- 결과 화면 등에 추가할 버튼 -->
+    <div class="result-buttons" style="margin-top: 20px;">
+        <button onclick="toggleHall()" class="hall-btn">🏆 명예의 전당 보기</button>
+    </div>
+
+    <div id="hall-of-fame-modal">
+        <span class="close-hall" onclick="toggleHall()">&times;</span>
+        <h2>🏆 명예의 전당</h2>
+        <div id="hall-content" class="hall-grid">
+            
+        </div>
+    </div>
+
+    <div id="top-ui" style="display: none;">
+        <!-- 진행 상태바 -->
+        <div id="progress-container">
+            <div id="progress-bar"></div>
+        </div>
+        <!-- 좌측 상단 스톱워치 UI -->
+        <div id="stopwatch-container">
+            <span id="stopwatch-display">00:00.00</span>
+        </div>
+        <!-- 여자아이돌 이상형 월드컵 -->
+        <div class="game-main-title">여자아이돌 이상형 월드컵</div>
+        <!-- 처음으로,뒤로 버튼 -->
+        <button id="undo-btn" onclick="undoChoice()">뒤로</button>
+        <button id="reset-btn" onclick="resetGame()">처음으로</button>
+        <!-- 라운드 정보 -->
+        <div class="round-info" id="round-title">라운드 정보</div>
+    </div>    
+        
+    <div id="intro-text">라운드 시작</div>
+    
+
+    <div id="game-container">
+
+        
+        
+        
+        <div class="match-box">
+            <div class="card" id="card-left" onclick="selectIdol(0)">
+                <img id="img-left" src="" alt="아이돌1">
+                <div class="card-name" id="name-left">IDOL 1</div>
+            </div>
+            <div class="vs-text" id="vs-middle">VS</div>
+            <div class="card" id="card-right" onclick="selectIdol(1)">
+                <img id="img-right" src="" alt="아이돌2">
+                <div class="card-name" id="name-right">IDOL 2</div>
+            </div>
+        </div>
+
+        <!-- 공유 및 초기화 버튼 (결과 화면에서 노출) -->
+        <div id="share-container" style="display: none;">
+            <a href="https://instagram.com" target="_blank" class="share-link">
+                <img src="https://i.pinimg.com/736x/d6/be/cc/d6beccbf190a3eac0f35474e06afdcbf.jpg" alt="Instagram">
+            </a>
+            <a href="https://tiktok.com" target="_blank" class="share-link">
+                <img src="https://i.pinimg.com/736x/f9/04/dd/f904dd32ac75927eb3caf94b010921a7.jpg" alt="TikTok">
+            </a>
+            <a href="https://x.com" target="_blank" class="share-link">
+                <img src="https://i.pinimg.com/736x/c1/d9/6c/c1d96c1f7a256e1a4dc31da44d715178.jpg" alt="X">
+            </a>
+        </div>
+
+        <div id="reset-btn-container" style="display: none;">
+            <button class="reset-button" onclick="smoothReload()">처음 화면으로 돌아가기</button>
+        </div>
+    </div>
+
+    <script>
+        const idols = [
+            { name: "IVE - 장원영", img: "https://i.pinimg.com/736x/96/e2/65/96e265599a416d732e87096201c83cb3.jpg" },
+            { name: "IVE - 레이", img: "https://cdn.newsbuzz.co.kr/news/photo/202506/11496_12280_249.jpg" },
+            { name: "IVE - 이서", img: "https://i.pinimg.com/1200x/33/85/fa/3385fabab582a8e02c4e3d4e24cf0c0c.jpg" },
+            { name: "IVE - 가을", img: "https://i.pinimg.com/736x/24/07/d3/2407d3a9c776018fd344c9fe61340c04.jpg" },
+            { name: "IVE - 리즈", img: "https://i.pinimg.com/736x/47/b3/9a/47b39a41b8b411a0e9be3e5edfdf84aa.jpg" },
+            { name: "IVE - 안유진", img: "https://i.pinimg.com/736x/7e/2c/7e/7e2c7efd84fd7a7fc5984d3c2be5a813.jpg" },
+            { name: "aespa - 카리나", img: "https://i.pinimg.com/736x/67/97/67/679767952feb80655b5b975e66a5b72f.jpg" },
+            { name: "aespa - 윈터", img: "https://i.pinimg.com/736x/ec/e8/12/ece812fae2bfd13b7e0d1a8442b73103.jpg" },
+            { name: "aespa - 닝닝", img: "https://cdn.mhnse.com/news/photo/202402/254939_273278_5747.jpg" },
+            { name: "aespa - 지젤", img: "https://i.pinimg.com/736x/28/78/20/287820f26d6474692941864a627336a8.jpg" },
+            { name: "NMIXX - 설윤", img: "https://i.namu.wiki/i/vyUxtbE-zURrUd56G2-ltNtAO3BFpF7lnJC9duO_H8MqCyvDgNsGcZ8ZgxJWYlZ5La5aIkkQUJWySSbXS-m7pDO_vgqGe1HL5DZxrSnhf6iGlIFLS5Z4aKy-v6USYHW5-SVXUo2pOmhEPZI7PSW3QA.webp" },
+            { name: "NMIXX - 베이", img: "https://i.pinimg.com/1200x/b1/13/3c/b1133c7b51f6bb4ca80fc653f607f076.jpg"},
+            { name: "NMIXX - 오해원", img: "https://i.pinimg.com/736x/cb/77/14/cb7714849fb5413f1fb91ccf2eaf925e.jpg"},
+            { name: "NMIXX - 릴리", img: "https://i.pinimg.com/736x/13/30/e5/1330e5720f175f89f7fcfd5a4a384498.jpg"},
+            { name: "NMIXX - 규진", img: "https://i.pinimg.com/736x/b1/08/d1/b108d17566ba77cbb3591a455029c8f8.jpg"},
+            { name: "NewJeans - 하니", img: "https://cdn.nbnnews.co.kr/news/photo/202309/792759_804454_4538.jpg" },
+            { name: "NewJeans - 해린", img: "https://cdn.mhnse.com/news/photo/202308/210546_215996_3020.jpg" },
+            { name: "NewJeans - 다니엘", img: "https://cdn.shown.co.kr/news/photo/202309/2821_3765_5743.jpg" },
+            { name: "NewJeans - 혜인", img: "https://file2.nocutnews.co.kr/newsroom/image/2024/04/11/202404111239449446_0.jpg" },
+            { name: "NewJeans - 민지", img: "https://pimg.mk.co.kr/news/cms/202401/16/news-p.v1.20240116.bbda7ab732c844ae9270e10b16592d4a_P1.jpeg" },
+            { name: "TWICE - 나연", img: "https://i.pinimg.com/1200x/1e/8d/7b/1e8d7b22e14adc2b514c941e39d1b9e2.jpg" },
+            { name: "TWICE - 사나", img: "https://t1.daumcdn.net/cfile/tistory/99E064405D1F4FA834" },
+            { name: "TWICE - 지효", img: "https://i.pinimg.com/736x/b6/4e/74/b64e7405ae0b946b181277b12c81714e.jpg" },
+            { name: "TWICE - 채영", img: "https://i.pinimg.com/736x/09/38/00/093800358aedd45533dc59a1782809e0.jpg" },
+            { name: "TWICE - 쯔위", img: "https://img2.sbs.co.kr/img/seditor/VD/2024/03/06/plb1709699789518-640-0.jpg" },
+            { name: "TWICE - 정연", img: "https://i.pinimg.com/1200x/a2/51/10/a25110f560bee960988e0046056092c5.jpg" },
+            { name: "TWICE - 다현", img: "https://i.namu.wiki/i/D3dzEihFCqKsEjm1wqIaLb0DrwB9J_O246mHINSUoRHvv9j9d_9EdzhYIYKCXYknZZM4f1bcd4lDoHTAIzRdonF3hK0Usbs7qrB0eaKrV3yuVoGrSdW9967-gMVr-6QXa66-vMotuDSHW4HGtIvhEQ.webp" },
+            { name: "TWICE - 모모", img: "https://i.pinimg.com/1200x/38/a0/5c/38a05cdd3fdafcf54705e96391d55c72.jpg" },
+            { name: "TWICE - 미나", img: "https://i.namu.wiki/i/ARMyyAnBQ8Qo8rR1DxsYnuY1u1rtx1W8qyNL7dx2XqTY63RqUtg_5acB8ECMdOzhANFaFBlE2M_Jww24Y_41lsF7nDVMLCumdXLauVOAgJ72ytdeEBlwZxkEAGTevRmzLoOpiK9cFBIxRV5_r6ePrg.webp" },
+            { name: "BlackPink - 제니", img: "https://i.pinimg.com/1200x/70/8a/88/708a881d1e0c1854f32c847244c3cc82.jpg" },
+            { name: "BlackPink - 로제", img: "https://i.pinimg.com/1200x/ee/57/21/ee5721aac10426908877180606a28013.jpg" },
+            { name: "BlackPink - 지수", img: "https://img9.yna.co.kr/etc/inner/KR/2021/10/10/AKR20211010018200005_02_i_P4.jpg" },
+            { name: "BlackPink - 리사", img: "https://cdn.topstarnews.net/news/photo/202110/14640767_708863_425.jpg" },
+            { name: "i-dle - 미연", img: "https://i.pinimg.com/736x/38/9b/70/389b70de6b6310b89fc50b8b10800178.jpg" },
+            { name: "i-dle - 민니", img: "https://i.pinimg.com/736x/95/cd/d4/95cdd44bf2bb172ba50c81887696c1b5.jpg" },
+            { name: "i-dle - 소연", img: "https://i.pinimg.com/736x/f5/cf/f3/f5cff357b6f66975b1382a0beb124ca3.jpg" },
+            { name: "i-dle - 우기", img: "https://i.pinimg.com/736x/b8/fc/00/b8fc00cae5569c3872ae8ff1676c04f2.jpg" },
+            { name: "i-dle - 슈화", img: "https://i.pinimg.com/736x/2e/32/d6/2e32d646ff87af0bbd1302685b1b6040.jpg" },
+            { name: "LE_SSERAFIM - 카즈하", img: "https://i.pinimg.com/736x/f5/35/1b/f5351b2e98c859fc0cb8acca52d035ce.jpg" },
+            { name: "LE_SSERAFIM - 허윤진", img: "https://i.pinimg.com/736x/aa/d3/08/aad3087cb91431c8212511340f649b9e.jpg" },
+            { name: "LE_SSERAFIM - 김채원", img: "https://i.pinimg.com/736x/b6/37/22/b637227e3d72ef14311a0234936f3d68.jpg" },
+            { name: "LE_SSERAFIM - 사쿠라", img: "https://i.pinimg.com/736x/89/f9/ee/89f9ee27ba3d93e4d74613caddcec358.jpg" },
+            { name: "LE_SSERAFIM - 홍은채", img: "https://i.pinimg.com/1200x/a0/6c/ba/a06cba3a8f7d0dd2b251347dfe0ce5ec.jpg" },
+            { name: "Red_Velvet - 아이린", img: "https://i.pinimg.com/736x/71/16/c9/7116c99340a13c18e05c7796e858f8aa.jpg" },
+            { name: "Red_Velvet - 슬기", img: "https://i.pinimg.com/736x/0e/b4/74/0eb47471e703826f2e05ddffe83fb7b8.jpg" },
+            { name: "Red_Velvet - 조이", img: "https://i.pinimg.com/1200x/a2/2f/34/a22f34c33820887143126d9c4779d951.jpg" },
+            { name: "ITZY - 유나", img: "https://i.namu.wiki/i/I4j_Wh0vfgf1sD-SAjvjOpbK1ezk8a1ZxtvhUi9a3qq9EpYzafhDIthWC1NQRiovb_rizCJ_dHr3GblFDVt8CV4bgl4gzRIqk4-3Y5Ik-PWm5cySJeaOF3B_MienRgosSrmVpbOdGpqIQTq66QSX9g.webp" },
+            { name: "fromis9 - 백지헌", img: "https://i.pinimg.com/736x/47/0d/03/470d037a74d72ea65cd3e1e00537ee7f.jpg"},
+            { name: "fromis9 - 이나경", img: "https://i.pinimg.com/1200x/fa/13/63/fa136367ab0964d3bbcac928acb7fb36.jpg"},
+            { name: "fromis9 - 박지원", img: "https://i.pinimg.com/1200x/14/e5/ee/14e5eef8865b8e1d2f8b196265e7b40d.jpg"},
+            { name: "fromis9 - 이채영", img: "https://i.pinimg.com/736x/cc/d6/e8/ccd6e843fea691726441e305b79b9a79.jpg"},  
+            { name: "fromis9 - 노지선", img: "https://i.pinimg.com/736x/05/a5/25/05a525b6884da22f4e0a5602c87e9bd9.jpg"},
+            { name: "fromis9 - 송하영", img: "https://i.namu.wiki/i/PyYA0TBjWqTyaznaPiFeJ8qppmNV2wzkRCWhDJ0o5UiSrBC3K1E5DaidoQdPppWAfaAhlGHLxpQuHozmnH6warY-drlUrPZ8a8ErL8lfdgXfcxvo6mf5h0IF-sWNzBS07j-1R61KAHukrXLXOq68nQ.webp"},
+            { name: "TripleS - 김채연", img: "https://i.pinimg.com/1200x/f4/11/13/f41113233e9fdf88a36f852dd732262e.jpg"},
+            { name: "TripleS - 김유연", img: "https://i.pinimg.com/1200x/d2/b5/23/d2b5233ca99f53fd33f0e6a8d12b3719.jpg"},
+            { name: "TripleS - 이지우", img: "https://i.pinimg.com/1200x/59/b9/8e/59b98e594ca8fed5869500f36dc36bb9.jpg"},
+            { name: "TripleS - 김나경", img: "https://i.pinimg.com/1200x/1c/05/04/1c0504c96e2eef5ac1ca2cee41f9490d.jpg"},
+            { name: "KISSOFLIFE - 하늘", img: "https://i.pinimg.com/736x/b1/cb/47/b1cb47ab9f0fde4908525c164cac0ad9.jpg"},
+            { name: "KISSOFLIFE - 나띠", img: "https://i.pinimg.com/736x/5f/84/0a/5f840a72888b3603ae9b770a97469d09.jpg"},
+            { name: "KISSOFLIFE - 벨", img: "https://i.pinimg.com/1200x/50/04/27/500427855e7a8437bb9872a779913b5e.jpg"},
+            { name: "KISSOFLIFE - 쥴리", img: "https://i.pinimg.com/1200x/67/40/a1/6740a10b080e10e19eed68a8690ad124.jpg"},
+            { name: "ILLIT - 민주", img: "https://i.pinimg.com/1200x/ae/2e/07/ae2e07d48673216330e6de2361f61995.jpg"},
+            { name: "ILLIT - 원희", img: "https://i.pinimg.com/736x/1e/13/c1/1e13c15ecbebf451bbe8e6a187bf060f.jpg"},
+            { name: "ILLIT - 모카", img: "https://i.pinimg.com/736x/c8/0b/b6/c80bb6953d39df1fe1279ab50adc0d1b.jpg"},
+            { name: "ILLIT - 윤아", img: "https://i.pinimg.com/736x/1f/d2/1e/1fd21efd96000ae6ae5eea5e3ca1856c.jpg"},
+            { name: "ILLIT - 이로하", img: "https://i.pinimg.com/736x/4e/03/61/4e0361f735a1772a0a5d4228caf2288b.jpg"},
+            { name: "ITZY - 채령", img: "https://i.pinimg.com/736x/0c/cb/5e/0ccb5e45a82e26ffef69d44cdbc159c6.jpg"},
+            { name: "ITZY - 리아", img: "https://i.pinimg.com/736x/1e/fa/88/1efa88d1985626ba25782c2d7985d1f4.jpg"},
+            { name: "Hearts2Hearts - 지우", img: "https://i.pinimg.com/736x/bd/95/bf/bd95bf8a07cbbdc968c5d771adb744a0.jpg"},
+            { name: "Hearts2Hearts - 유하", img: "https://i.pinimg.com/736x/65/93/f7/6593f7d976554484e794ab5f0ab47b6d.jpg"},
+            { name: "Hearts2Hearts - 이안", img: "https://pbs.twimg.com/media/G3MxvpRXoAA48zv.jpg" },
+            { name: "Hearts2Hearts - 스텔라", img: "https://i.pinimg.com/736x/f4/5b/ba/f45bbacaefb7b52ece3ec086756d1685.jpg"},
+            { name: "키키 - 이솔", img: "https://i.pinimg.com/736x/fc/53/7c/fc537c4da687b93968827b75ea991789.jpg"},
+            { name: "키키 - 키야", img: "https://i.pinimg.com/736x/d8/8b/03/d88b03f8a649b4c6326d585f10598483.jpg"},
+            { name: "(전)이달의 소녀 - 츄", img: "https://i.pinimg.com/736x/ad/f0/6d/adf06d8cceafbc21315ae01821ddc71f.jpg"},
+            { name: "(전)아이즈원 - 권은비", img: "https://i.pinimg.com/1200x/29/a4/09/29a409090a93a8140616c8dfafac13a3.jpg"},
+            { name: "아이즈원 - 김민주", img: "https://i.pinimg.com/1200x/49/82/86/498286362bf7c237d209b23692588323.jpg"},
+            { name: "(전)아이즈원 - 최예나", img: "https://i.pinimg.com/736x/1e/1e/b6/1e1eb676d6c57294198f76a95da2715c.jpg"},
+            { name: "(전)아이즈원 - 조유리", img: "https://i.pinimg.com/1200x/0f/78/ea/0f78ea8f9b65bd8d0ad71351cb5998a7.jpg"},
+            { name: "빌리 - 츠키", img: "https://i.pinimg.com/1200x/f5/43/a9/f543a94366f69004a25c563f06e4c60a.jpg"},
+            { name: "STAYC - 세은", img: "https://i.pinimg.com/736x/67/fd/7d/67fd7d213998786ac934cbfe53e2f8ec.jpg"},
+            { name: "STAYC - 시은", img: "https://i.pinimg.com/1200x/0b/e2/53/0be25395fb54de9ad63195ac1fcb4622.jpg"},
+            { name: "STAYC - 윤", img: "https://i.pinimg.com/736x/0e/12/09/0e1209354e629a249ec3f733b61b4a0b.jpg"},
+            { name: "STAYC - 아이사", img: "https://i.pinimg.com/736x/c3/f3/bb/c3f3bb3fe5c4f7e994fea128048280af.jpg"},
+            { name: "STAYC - 재이", img: "https://i.pinimg.com/736x/f9/c7/69/f9c769c6073e01e6ffc178a6edc91aba.jpg"},
+            { name: "STAYC - 수민", img: "https://i.pinimg.com/1200x/59/f2/d1/59f2d18fc8eb02d0b77f327ed8d12ad0.jpg"},
+            { name: "브레이브걸스 - 민영", img: "https://i.pinimg.com/1200x/6c/82/ef/6c82ef7bda5e0af08f37bfd70cf2a396.jpg"},
+            { name: "브레이브걸스 - 은지", img: "https://i.pinimg.com/1200x/10/29/d9/1029d92dcf93903e196abebd05792875.jpg"},
+            { name: "브레이브걸스 - 유나", img: "https://i.pinimg.com/1200x/b7/c6/60/b7c6600c22c46d8d7bada3910ca97ee7.jpg"},
+            { name: "브레이브걸스 - 유정", img: "https://i.pinimg.com/1200x/90/02/c5/9002c559323ed8a7adbe8a2e6a3df6f1.jpg"},
+            { name: "(전)APINK - 손나은", img: "https://i.pinimg.com/1200x/63/2a/7e/632a7e365e5ee412d58df9cac4bcb5ac.jpg"},
+            { name: "APINK - 박초롱", img: "https://i.pinimg.com/1200x/b5/0c/e0/b50ce08a2214d7c06ac4253c303110e8.jpg"},
+            { name: "APINK - 윤보미", img: "https://i.pinimg.com/736x/62/20/98/622098a4f5837d2e7f760dc264e8fee7.jpg"},
+            { name: "APINK - 김남주", img: "https://i.namu.wiki/i/32PCEM5ROUcuUe6vmE-3ycxzPJXAYZ3MEHTu3zZUBl7hdQ8atcPcUm_f7VMwV-2Q2ixZBHXgBaqOTyLfsyf8Pi9vAeUwJnbH5RhcizUiltCo-DSJrxC7GRJQuuvdUJr_yphHVUnqiIhjTi8XMUjHYg.webp"},
+            { name: "APINK - 정은지", img: "https://i.pinimg.com/736x/d4/f2/7f/d4f27f018ded2ff5c0dd1264d07a3279.jpg"},
+            { name: "APINK - 오하영", img: "https://i.pinimg.com/1200x/58/ef/03/58ef03fdb4b02db158d1649168cba151.jpg"},
+            { name: "QWER - 히나", img: "https://i.pinimg.com/736x/cf/e7/53/cfe7534648c486fa84ddcb148e204a20.jpg"},
+            { name: "QWER - 시연", img: "https://i.pinimg.com/736x/87/d3/f7/87d3f7723c737f5b910a7cac513d9095.jpg"},
+            { name: "QWER - 마젠타", img: "https://i.pinimg.com/736x/18/35/71/1835712923c1b1a4d57cb0facdb5464d.jpg"},
+            { name: "QWER - 쵸단", img: "https://i.pinimg.com/736x/96/82/59/96825982ddfa132f705837848925074f.jpg"},
+            { name: "missA - 수지", img: "https://i.pinimg.com/736x/e5/f0/b0/e5f0b0279c35829540ab845f9dfb3e57.jpg"},
+            { name: "오마이걸 - 효정", img: "https://i.pinimg.com/736x/65/5a/c2/655ac229f15f97578fc6c50a5ba0838f.jpg"},
+            { name: "오마이걸 - 미미", img: "https://i.pinimg.com/1200x/8b/e2/74/8be274f0591a4ae08d3097611e1649ab.jpg"},
+            { name: "오마이걸 - 유아", img: "https://i.pinimg.com/1200x/1a/e7/b5/1ae7b5945d9c7fe29fe1633a33cc0dfc.jpg"},
+            { name: "오마이걸 - 승희", img: "https://i.pinimg.com/736x/25/f4/26/25f4269f2e192c15bc50cd8e7c20c094.jpg"},
+            { name: "오마이걸 - 유빈", img: "https://i.pinimg.com/736x/4d/0d/e8/4d0de8372fdc72e919e2783ac28bb945.jpg"},
+            { name: "오마이걸 - 아린", img: "https://i.pinimg.com/1200x/fe/2c/5d/fe2c5d5bdaac0a64797bb2266e87bb47.jpg"},
+            { name: "우주소녀 - 루다", img: "https://i.pinimg.com/1200x/68/77/d3/6877d30d41958dc29dd3817ed325bfd7.jpg"},
+            { name: "우주소녀 - 보나", img: "https://i.pinimg.com/736x/b2/95/8f/b2958fea412190055643baa0c594f37e.jpg"},
+            { name: "우주소녀 - 설아", img: "https://i.pinimg.com/1200x/42/2f/27/422f278b95e614919fa21fa1f69ff5d0.jpg"},
+            { name: "VIVIZ - 신비", img: "https://i.pinimg.com/736x/85/9d/88/859d88699cc8491fc7c0c90e21aa8687.jpg"},
+            { name: "VIVIZ - 은하", img: "https://i.namu.wiki/i/ouTvJwZW5hfRZmiN2NRxGWSXxfi5y44eB4P7rNmIFVDaNE627DFQZzXlwjJcfLhQ2UEgHrfxsnZ-GAwK9A0w-B-gx_dZwhboT_LTNoNxZsoxQQZyZZ34DAjt98-HGRQYMMtLyGEHDyCqTWs8Y-CvdQ.webp"},
+            { name: "하이키 - 리이나", img: "https://i.pinimg.com/736x/f7/96/3d/f7963dba1fd19f39c45f25f2158f5382.jpg"},
+            { name: "하이키 - 서이", img: "https://i.pinimg.com/736x/46/47/4a/46474a29bc0c4b48c14897f1343ed8ac.jpg"},
+            { name: "하이키 - 휘서", img: "https://i.pinimg.com/736x/c3/a3/31/c3a331059fccbc654bb52e147a4a27fa.jpg"},
+            { name: "하이키 - 옐", img: "https://i.pinimg.com/736x/0c/62/f9/0c62f93d0b5a03c587b872ea2cb8420d.jpg"},
+            { name: "BabyMonster - 아현", img: "https://i.pinimg.com/736x/f9/d4/74/f9d474b79e4f89cf162ffb62c5dff00b.jpg"},
+            { name: "BabyMonster - 아사", img: "https://i.pinimg.com/736x/d2/d0/73/d2d073b37323926910fd46c8acf26f65.jpg"},
+            { name: "BabyMonster - 라미", img: "https://i.pinimg.com/736x/a3/8b/2e/a38b2e30754a37f470be6793da4ae2ad.jpg"},
+            { name: "BabyMonster - 루카", img: "https://i.pinimg.com/1200x/c5/55/91/c555912e277d8cc3e271febe051406a0.jpg"},
+            { name: "BabyMonster - 치키타", img: "https://i.pinimg.com/736x/32/07/b1/3207b1f862dc45dcc53ab425ee43d68e.jpg"},
+            { name: "Kep1er - 최유진", img: "https://i.pinimg.com/1200x/cb/a8/7d/cba87d161a41cb700066cd9b3e17f034.jpg"},
+            { name: "Kep1er - 샤오팅", img: "https://i.pinimg.com/736x/f3/ec/07/f3ec07e8a42f65aa5d34873a711877bf.jpg"},
+            { name: "Kep1er - 채현", img: "https://i.pinimg.com/736x/e8/23/3c/e8233c01e86a419a8fb136c89128c264.jpg"},
+            { name: "Kep1er - 다연", img: "https://i.pinimg.com/1200x/53/81/17/53811701e48ffefe1abe6e3b16076d16.jpg"},
+            { name: "걸스데이 - 유라", img: "https://i.pinimg.com/1200x/49/91/b2/4991b24555fa07d085961614f7faaa44.jpg"},
+            { name: "소녀시대 - 윤아", img: "https://i.pinimg.com/1200x/77/ce/4c/77ce4c972ae209a6adb4191c87d6a12e.jpg"},
+            { name: "카라 - 구하라", img: "https://i.pinimg.com/736x/26/86/ce/2686ce49f67c039add4ddd2fa5306db8.jpg"},
+            { name: "MEOVV - 안나", img: "https://i.pinimg.com/736x/df/77/c7/df77c7caf7c988c219af35a852b5f46e.jpg"},
+            { name: "MEOVV - 수인", img: "https://i.pinimg.com/1200x/3f/b7/5f/3fb75fc9cbd68844db91a56712d026f9.jpg"},
+        ];
+
+        let currentMatches = [];
+        let winners = [];
+        let matchIndex = 0;
+        let totalRounds = 32;
+        let isProcessing = false;
+        let history = [];
+
+        function startWorldCup(num) {
+            totalRounds = num;
+            const menu = document.getElementById('main-menu');
+            menu.style.opacity = '0';
+            setTimeout(() => {
+                menu.style.display = 'none';
+                currentMatches = [...idols].sort(() => Math.random() - 0.5).slice(0, num);
+                showRoundIntro(totalRounds === 2 ? "결승" : totalRounds + "강");
+            }, 800);
+        }
+
+        function showRoundIntro(text) {
+            const container = document.getElementById('game-container');
+            container.style.opacity = '0';
+
+            document.querySelector('.hall-btn').style.display = 'none';
+            document.getElementById('progress-container').style.display = 'none';
+            document.getElementById('stopwatch-container').style.display = 'none';
+            document.querySelector('.game-main-title').style.display = 'none';
+            document.getElementById('round-title').style.display = 'none';
+            document.getElementById('undo-btn').style.display = 'none';
+            document.getElementById('reset-btn').style.display = 'none';
+
+            setTimeout(() => {
+                container.style.display = 'none';
+                const intro = document.getElementById('intro-text');
+                intro.innerText = text;
+                intro.classList.add('show');
+                setTimeout(() => {
+                    intro.classList.remove('show');
+                    setTimeout(initGame, 500);
+                }, 1500);
+            }, 400);
+        }
+
+        function initGame() {
+            const container = document.getElementById('game-container');
+            const topUI = document.getElementById('top-ui'); // 상단 UI 그룹 가져오기
+            
+            container.style.display = 'flex';
+            if(topUI) topUI.style.display = 'block'; // 👈 게임 시작 시 상단 UI 표시
+
+            document.getElementById('progress-container').style.display = 'block';
+            document.getElementById('stopwatch-container').style.display = 'block';
+            document.querySelector('.game-main-title').style.display = 'block';
+            document.getElementById('round-title').style.display = 'block';
+            document.querySelector('.hall-btn').style.display = 'block';
+
+            setTimeout(() => {
+                container.style.opacity = '1';
+                elapsedTime = 0; 
+                startStopwatch(); 
+                showMatch();
+            }, 50);
+        }
+
+        function showMatch() {
+            const progress = ((matchIndex / 2) / (totalRounds / 2)) * 100;
+            document.getElementById('progress-bar').style.width = progress + '%';
+            const container = document.getElementById('game-container');
+            const cardL = document.getElementById('card-left');
+            const cardR = document.getElementById('card-right');
+            container.classList.remove('select-anim-active', 'select-left-anim', 'select-right-anim');
+            cardL.classList.remove('card-selected');
+            cardR.classList.remove('card-selected');
+            const left = currentMatches[matchIndex];
+            const right = currentMatches[matchIndex + 1];
+            document.getElementById('round-title').innerText = totalRounds === 2 ? "결승전" : `${totalRounds}강 (${(matchIndex/2)+1}/${totalRounds/2})`;
+            document.getElementById('img-left').src = left.img;
+            document.getElementById('name-left').innerText = left.name;
+            document.getElementById('img-right').src = right.img;
+            document.getElementById('name-right').innerText = right.name;
+            isProcessing = false; 
+            const undoBtn = document.getElementById('undo-btn');
+            if (matchIndex === 0 || totalRounds === 2) {
+                undoBtn.style.display = 'none';
+            } else {
+                undoBtn.style.display = 'block';
+            }
+            const resetBtn = document.getElementById('reset-btn');
+
+            if (totalRounds === 2) {
+                resetBtn.style.display = 'none';
+            } else {
+                resetBtn.style.display = 'block';
+            }
+        }
+
+        // 1. 아이돌 선택 로직 수정
+        function selectIdol(offset) {
+            if (isProcessing) return; 
+            isProcessing = true;
+            
+            history.push({
+                currentMatches: [...currentMatches],
+                winners: [...winners],
+                matchIndex: matchIndex,
+                totalRounds: totalRounds
+            });
+
+            const container = document.getElementById('game-container');
+            container.classList.add('select-anim-active');
+            
+            if (offset === 0) {
+                container.classList.add('select-left-anim');
+            } else {
+                container.classList.add('select-right-anim');
+            }
+
+            // 선택된 아이돌을 승자 명단에 추가
+            winners.push(currentMatches[matchIndex + offset]);
+            matchIndex += 2;
+
+            setTimeout(() => {
+                container.style.opacity = '0';
+                
+                setTimeout(() => {
+                    // 1. 현재 라운드에 대결할 팀이 더 남아있는 경우
+                    if (matchIndex < currentMatches.length) {
+                        showMatch();
+                        container.style.opacity = '1';
+                    } 
+                    // 2. 현재 라운드의 모든 대결이 끝난 경우
+                    else {
+                        // 승자가 단 한 명이라면? -> 최종 우승!
+                        if (winners.length === 1) {
+                            showFinalWinner(winners[0]);
+                        } 
+                        // 승자가 여러 명이라면? -> 다음 강으로 진행 (예: 4강 -> 결승)
+                        else {
+                            currentMatches = [...winners];
+                            winners = [];
+                            matchIndex = 0;
+                            totalRounds = currentMatches.length;
+                            showRoundIntro(totalRounds === 2 ? "결승" : totalRounds + "강");
+                        }
+                    }
+                }, 300); // 화면 전환 대기 시간
+            }, 600); // 애니메이션 지속 시간
+        }
+
+        // 2. 최종 우승자 화면 표시 로직 수정
+        function showFinalWinner(winner) {
+            stopStopwatch(); // 타이머 정지
+
+            const container = document.getElementById('game-container');
+            const matchBox = document.querySelector('.match-box');
+            const roundInfo = document.getElementById('round-title');
+            const resetBtn = document.getElementById('reset-btn-container');
+            const shareContainer = document.getElementById('share-container');
+
+            // 기존 애니메이션 클래스 모두 제거
+            container.classList.remove('select-anim-active', 'select-left-anim', 'select-right-anim');
+
+            // UI 변경
+            roundInfo.innerText = "최종 우승";
+            document.getElementById('progress-bar').style.width = '100%';
+
+            // 중앙에 우승자 카드만 배치 (중요: VS 텍스트와 우측 카드 제거)
+            matchBox.innerHTML = `
+                <div class="card winner-card">
+                    <img src="${winner.img}" alt="${winner.name}">
+                    <div class="card-name">${winner.name}</div>
+                </div>
+            `;
+
+            // 결과 화면 노출
+            container.style.display = 'flex';
+            container.style.opacity = '1';
+
+            // 공유 버튼 및 다시 시작 버튼 표시
+            setTimeout(() => {
+                shareContainer.style.display = 'flex';
+                shareContainer.style.opacity = '1';
+                resetBtn.style.display = 'block';
+                resetBtn.style.opacity = '1';
+            }, 500);
+
+            saveWinner(winner); // 명예의 전당 저장
+        }   
+
+        function drawConstellation(id, stars, lines) {
+            const container = document.getElementById(id);
+            stars.forEach(p => {
+                const s = document.createElement('div');
+                s.className = 'const-star';
+                s.style.left = p.x + 'px'; s.style.top = p.y + 'px';
+                container.appendChild(s);
+            });
+            lines.forEach(l => {
+                const p1 = stars[l[0]], p2 = stars[l[1]];
+                const line = document.createElement('div');
+                line.className = 'const-line';
+                const dist = Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+                const angle = Math.atan2(p2.y - p1.y, p2.x - p1.x) * 180 / Math.PI;
+                line.style.width = dist + 'px';
+                line.style.left = (p1.x + 2) + 'px'; line.style.top = (p1.y + 2) + 'px';
+                line.style.transform = `rotate(${angle}deg)`;
+                container.appendChild(line);
+            });
+        }
+
+        window.onload = () => {
+            // 키보드 이벤트 리스너 추가
+            document.addEventListener('keydown', (e) => {
+                // 눌린 키가 'Escape' (ESC)이고, 모달 창이 현재 표시 중('block')일 때만 실행
+                if (e.key === 'Escape') {
+                    const modal = document.getElementById('hall-of-fame-modal');
+                    if (modal.style.display === 'block') {
+                        toggleHall(); // 기존에 만들어둔 닫기 함수 호출
+                    }
+                }
+            });
+            for (let i = 0; i < 150; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                const size = Math.random() * 2 + 1 + 'px';
+                star.style.width = size; star.style.height = size;
+                star.style.left = Math.random() * 100 + 'vw';
+                star.style.top = Math.random() * 100 + 'vh';
+                star.style.setProperty('--duration', Math.random() * 3 + 3 + 's');
+                document.body.appendChild(star);
+            }
+            drawConstellation('const-aquarius', [{x:20,y:120}, {x:70,y:100}, {x:110,y:60}, {x:170,y:70}, {x:210,y:110}, {x:260,y:130}, {x:290,y:180}], [[0,1], [1,2], [2,3], [3,4], [4,5], [5,6]]);
+            drawConstellation('const-sagittarius', [{x:140,y:30}, {x:90,y:80}, {x:40,y:160}, {x:100,y:170}, {x:160,y:130}, {x:170,y:80}, {x:240,y:170}, {x:260,y:90}], [[0,5], [5,4], [4,3], [3,1], [1,5], [1,2], [4,6], [5,7]]);
+        };
+        // --- 별똥별 로직 추가 ---
+        function createShootingStar() {
+            const star = document.createElement('div');
+            star.className = 'shooting-star';
+            const startX = Math.random() * 80;
+            star.style.left = startX + 'vw';
+            const duration = Math.random() * 1.5 + 1.5;
+            star.style.animation = `shoot ${duration}s linear forwards`;
+            document.body.appendChild(star);
+            setTimeout(() => { star.remove(); }, duration * 1000);
+        }
+
+        function startShooting() {
+            const delay = Math.random() * 1000 + 500;
+            setTimeout(() => {
+                createShootingStar();
+                startShooting();
+            }, delay);
+        }
+
+        // 기존 window.onload에 영향을 주지 않도록 추가 실행
+        window.addEventListener('load', () => {
+            startShooting();
+        });
+
+        // --- 마우스 별 가루 로직 ---
+        document.addEventListener('mousemove', (e) => {
+            // 성능을 위해 3번에 1번만 생성 (숫자를 낮추면 더 빽빽해짐)
+            if (Math.random() > 0.7) return;
+
+            const particle = document.createElement('div');
+            particle.className = 'cursor-particle';
+            
+            // 마우스 위치에 생성
+            particle.style.left = e.clientX + 'px';
+            particle.style.top = e.clientY + 'px';
+
+            // 약간의 랜덤성 부여 (크기와 퍼지는 방향)
+            const size = Math.random() * 4 + 2 + 'px';
+            particle.style.width = size;
+            particle.style.height = size;
+            
+            // 별 가루 색상 랜덤 (흰색 ~ 아주 연한 하늘색)
+            if (Math.random() > 0.8) {
+                particle.style.background = '#add8e6';
+            }
+
+            document.body.appendChild(particle);
+
+            // 1초 후 제거
+            setTimeout(() => {
+                particle.remove();
+            }, 1000);
+        });
+
+        // 처음으로 돌아가기 기능
+        function smoothReload() {
+            // 부드러운 전환을 위해 화면을 살짝 흐리게 만든 뒤 새로고침
+            const container = document.getElementById('game-container');
+            container.style.opacity = '0';
+            
+            setTimeout(() => {
+                window.location.reload();
+            }, 400);
+        }
+
+        // 우승 데이터 저장 (이름과 이미지를 매칭하여 저장)
+        function saveWinner(winner) {
+            let hallData = JSON.parse(localStorage.getItem('worldcup_hall_of_fame') || '{}');
+
+            if (hallData[winner.name]) {
+                hallData[winner.name].count += 1;
+            } else {
+                hallData[winner.name] = {
+                    count: 1,
+                    img: winner.img
+                };
+            }
+
+            localStorage.setItem('worldcup_hall_of_fame', JSON.stringify(hallData));
+        }
+
+        // 명예의 전당 화면 표시 로직
+        function displayHall() {
+            const hallContent = document.getElementById('hall-content');
+            const hallData = JSON.parse(localStorage.getItem('worldcup_hall_of_fame') || '{}');
+
+            // 객체를 배열로 변환 후 우승 횟수 내림차순 정렬
+            const sortedList = Object.entries(hallData).sort((a, b) => b[1].count - a[1].count);
+
+            if (sortedList.length === 0) {
+                hallContent.innerHTML = "<p style='grid-column: 1/-1; text-align: center; font-size: 1.5rem; opacity: 0.5;'>아직 우승 기록이 없습니다.</p>";
+                return;
+            }
+
+            hallContent.innerHTML = sortedList.map(([name, data]) => `
+                <div class="hall-card">
+                    <img src="${data.img}" alt="${name}">
+                    <div class="hall-info">
+                        <div class="hall-name">${name}</div>
+                        <div class="hall-count">누적 우승: ${data.count}회</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 모달 열고 닫기
+        function toggleHall() {
+            const modal = document.getElementById('hall-of-fame-modal');
+            if (modal.style.display === 'block') {
+                modal.style.display = 'none';
+            } else {
+                displayHall(); // 열 때마다 최신 데이터 갱신
+                modal.style.display = 'block';
+            }
+        }
+        // 1. 전역 변수 선언 (함수 바깥 최상단)
+        let startTime;
+        let timerInterval = null;
+        let elapsedTime = 0;
+
+        // 2. 스톱워치 시작 함수
+        function startStopwatch() {
+            // 이미 타이머가 돌아가고 있다면 중복 실행하지 않음
+            if (timerInterval) return; 
+
+            startTime = Date.now() - elapsedTime;
+            timerInterval = setInterval(updateDisplay, 10); // 10ms마다 updateDisplay 실행
+            console.log("스톱워치 시작됨"); 
+        }
+
+        // 3. 화면 업데이트 함수
+        function updateDisplay() {
+            elapsedTime = Date.now() - startTime;
+            
+            const minutes = Math.floor(elapsedTime / 60000);
+            const seconds = Math.floor((elapsedTime % 60000) / 1000);
+            const milliseconds = Math.floor((elapsedTime % 1000) / 10);
+
+            // 00:00.00 형식으로 맞추기
+            const m = String(minutes).padStart(2, '0');
+            const s = String(seconds).padStart(2, '0');
+            const ms = String(milliseconds).padStart(2, '0');
+
+            const display = document.getElementById('stopwatch-display');
+            if (display) {
+                display.innerText = `${m}:${s}.${ms}`;
+            }
+        }
+
+        // 4. 스톱워치 정지 함수
+        function stopStopwatch() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+                console.log("스톱워치 정지됨");
+            }
+        }
+
+        function displayWinner(winner) {
+            stopStopwatch(); // 우승자가 나오면 정지
+            // ... 우승자 결과 화면 로직 ...
+        }
+        
+        
+
+        function undoChoice() {
+            if (history.length === 0) return;
+
+            const prev = history.pop();
+
+            currentMatches = prev.currentMatches;
+            winners = prev.winners;
+            matchIndex = prev.matchIndex;
+            totalRounds = prev.totalRounds;
+
+            showMatch();
+        }
+        function resetGame() {
+            const body = document.body;
+
+            body.classList.add('fade-out'); // 화면 서서히 사라짐
+
+            setTimeout(() => {
+                location.reload(); // 페이드 끝나고 새로고침
+            }, 500);
+        }
+
+    
+
+    </script>
+</body>
+</html>
