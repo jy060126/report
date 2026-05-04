@@ -249,18 +249,18 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 75vw; /* 1920의 75% 수준 대응 */
-            height: 75vh;
-            background: rgba(10, 12, 15, 0.95);
+            width: 75vw;
+            height: 90vh;
+            background: rgba(10, 12, 15, 0.98);
             backdrop-filter: blur(20px);
-            border: 2px solid gold;
-            border-radius: 30px;
+            border: 2px solid gold; /* 금색 테두리 유지 */
+            border-radius: 4px;      /* 👈 둥근 모서리를 직사각형으로 변경 */
             z-index: 2000;
             padding: 40px;
             box-sizing: border-box;
-            overflow-y: auto; /* 마우스 휠로 내릴 수 있도록 설정 */
-
-            
+            overflow: hidden;        /* 👈 중요: 스크롤바가 박스 밖으로 튀어나오는 것 방지 */
+            box-shadow: 0 0 40px rgba(0,0,0,0.8);
+            overflow-y: auto;  /* 👈 여기로 스크롤 이동 */
         }
 
         /* 커스텀 스크롤바 */
@@ -280,10 +280,32 @@
             margin-bottom: 40px;
             letter-spacing: 2px;
         }
+
+        .hall-list::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .hall-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .hall-list::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #ffd700, #ffae00);
+            border-radius: 10px;
+            border: 2px solid transparent;
+            background-clip: content-box;
+        }
+
+        .hall-list::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, #fff, #ffd700);
+        }
+
         .hall-list {
             display: flex;
             flex-direction: column;
             gap: 12px;
+            height: calc(100% - 150px); /* 상단 제목과 설명 제외한 나머지 높이 */
+            padding-bottom: 40px; /* 👈 이거 추가 (여백) */
         }
 
         .hall-row {
@@ -291,10 +313,10 @@
             grid-template-columns: 60px 70px 1.5fr 1fr 1fr;
             align-items: center;
             gap: 15px;
-
             padding: 12px 15px;
             background: rgba(255,255,255,0.05);
-            border-radius: 12px;
+            border-radius: 2px;         /* 👈 내부 박스들도 직사각형화 */
+            transition: background 0.3s;
         }
 
         /* 순위 */
@@ -306,9 +328,9 @@
 
         /* 이미지 */
         .hall-row img {
-            width: 60px;
-            height: 60px;
-            border-radius: 8px;
+            width: 60px; 
+            height: 60px; 
+            border-radius: 0;           /* 👈 이미지도 직사각형으로 통일 */
             object-fit: cover;
         }
 
@@ -690,7 +712,7 @@
             { name: "STAYC - 시은", img: "https://i.pinimg.com/1200x/0b/e2/53/0be25395fb54de9ad63195ac1fcb4622.jpg"},
             { name: "STAYC - 윤", img: "https://i.pinimg.com/736x/0e/12/09/0e1209354e629a249ec3f733b61b4a0b.jpg"},
             { name: "STAYC - 아이사", img: "https://i.pinimg.com/736x/c3/f3/bb/c3f3bb3fe5c4f7e994fea128048280af.jpg"},
-            { name: "STAYC - 재이", img: "https://i.pinimg.com/736x/f9/c7/69/f9c769c6073e01e6ffc178a6edc91aba.jpg"},
+            { name: "STAYC - 재이", img: "https://i.pinimg.com/736x/f9/c769/f9c769c6073e01e6ffc178a6edc91aba.jpg"},
             { name: "STAYC - 수민", img: "https://i.pinimg.com/1200x/59/f2/d1/59f2d18fc8eb02d0b77f327ed8d12ad0.jpg"},
             { name: "브레이브걸스 - 민영", img: "https://i.pinimg.com/1200x/6c/82/ef/6c82ef7bda5e0af08f37bfd70cf2a396.jpg"},
             { name: "브레이브걸스 - 은지", img: "https://i.pinimg.com/1200x/10/29/d9/1029d92dcf93903e196abebd05792875.jpg"},
@@ -801,8 +823,9 @@
         }
 
         function showMatch() {
-            const progress = ((matchIndex / 2) / (totalRounds / 2)) * 100;
+            const progress = (((matchIndex / 2)+1) / (totalRounds / 2)) * 100;
             document.getElementById('progress-bar').style.width = progress + '%';
+
             const container = document.getElementById('game-container');
             const cardL = document.getElementById('card-left');
             const cardR = document.getElementById('card-right');
@@ -836,6 +859,23 @@
         function selectIdol(offset) {
             if (isProcessing) return; 
             isProcessing = true;
+
+            const leftIdol = currentMatches[matchIndex];
+            const rightIdol = currentMatches[matchIndex + 1];
+            const selectedIdol = currentMatches[matchIndex + offset];
+
+            let hallData = JSON.parse(localStorage.getItem('worldcup_hall_of_fame') || '{}');
+
+            [leftIdol, rightIdol].forEach(idol => {
+                if (!hallData[idol.name]) {
+                    hallData[idol.name] = { count: 0, win: 0, match: 0, img: idol.img };
+                }
+                hallData[idol.name].match += 1;
+            });
+
+            hallData[selectedIdol.name].win += 1;
+
+            localStorage.setItem('worldcup_hall_of_fame', JSON.stringify(hallData));
             
             history.push({
                 currentMatches: [...currentMatches],
@@ -1040,11 +1080,16 @@
         function saveWinner(winner) {
             let hallData = JSON.parse(localStorage.getItem('worldcup_hall_of_fame') || '{}');
 
+            let totalGames = parseInt(localStorage.getItem('total_games_played') || '0') + 1;
+            localStorage.setItem('total_games_played', totalGames);
+
             if (hallData[winner.name]) {
                 hallData[winner.name].count += 1;
             } else {
                 hallData[winner.name] = {
                     count: 1,
+                    win: hallData[winner.name]?.win || 0,
+                    match: hallData[winner.name]?.match || 0,
                     img: winner.img
                 };
             }
@@ -1056,9 +1101,16 @@
         function displayHall() {
             const hallContent = document.getElementById('hall-content');
             const hallData = JSON.parse(localStorage.getItem('worldcup_hall_of_fame') || '{}');
+            const totalGames = parseInt(localStorage.getItem('total_games_played') || '0'); // 총 게임 판수
 
-            // 객체를 배열로 변환 후 우승 횟수 내림차순 정렬
-            const sortedList = Object.entries(hallData).sort((a, b) => b[1].count - a[1].count);
+            // 전체 아이돌 배열을 순회하며 기존 데이터와 병합 (기록이 없으면 모두 0 처리)
+            const allIdolsData = idols.map(idol => {
+                const data = hallData[idol.name] || { count: 0, win: 0, match: 0, img: idol.img };
+                return [idol.name, data];
+            });
+
+            // 우승 횟수 내림차순 정렬
+            const sortedList = allIdolsData.sort((a, b) => b[1].count - a[1].count);
 
             if (sortedList.length === 0) {
                 hallContent.innerHTML = "<p style='grid-column: 1/-1; text-align: center; font-size: 1.5rem; opacity: 0.5;'>아직 우승 기록이 없습니다.</p>";
@@ -1066,8 +1118,9 @@
             }
 
             hallContent.innerHTML = sortedList.map(([name, data], index) => {
-                const winRate = Math.min(80, 50 + data.count); // 임시
-                const champRate = (data.count * 5).toFixed(2); // 임시
+                // 게임 판수가 0일 때 NaN 방지 처리
+                const champRate = totalGames > 0 ? ((data.count / totalGames) * 100).toFixed(2) : "0.00";
+                const winRate = data.match > 0 ? ((data.win / data.match) * 100).toFixed(2) : "0.00";
 
                 return `
                 <div class="hall-row">
